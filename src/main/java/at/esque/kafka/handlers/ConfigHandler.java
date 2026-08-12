@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class ConfigHandler {
     private static final String CONFIG_DIRECTORY = System.getProperty("user.home") + "/.kafkaesque/%s";
+    private static final TypeReference<Map<String, Object>> OBJECT_MAP_TYPE = new TypeReference<>() {};
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigHandler.class);
 
@@ -234,6 +235,7 @@ public class ConfigHandler {
         return clusterConfigs;
     }
 
+    @SuppressWarnings("deprecation") // Required to read and migrate the legacy persisted property.
     public void maybeMigrateDeprecatedConfig(ClusterConfigs clusterConfigs) {
         AtomicBoolean updated = new AtomicBoolean(false);
         clusterConfigs.getClusterConfigs().forEach(config -> {
@@ -384,7 +386,7 @@ public class ConfigHandler {
         File versionCheckFile = new File(String.format(CONFIG_DIRECTORY, "versionCheck.yaml"));
         if (versionCheckFile.exists()) {
             try {
-                return (Map<String, Object>) objectMapper.readValue(versionCheckFile, Map.class);
+                return objectMapper.readValue(versionCheckFile, OBJECT_MAP_TYPE);
             } catch (IOException e) {
                 return null;
             }

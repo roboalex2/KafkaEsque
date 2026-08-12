@@ -14,7 +14,7 @@
 <?import java.lang.String?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.control.ToggleButton?>
-<BorderPane prefHeight="295.0" prefWidth="497.0" xmlns="http://javafx.com/javafx/11.0.1"
+<BorderPane prefHeight="295.0" prefWidth="497.0" xmlns="http://javafx.com/javafx/25.0.2"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.esque.kafka.acl.viewer.AclViewerController">
     <center>
         <TableView fx:id="resultView" BorderPane.alignment="CENTER">

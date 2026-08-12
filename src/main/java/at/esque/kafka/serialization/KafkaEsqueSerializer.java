@@ -21,15 +21,19 @@ import java.util.function.Function;
 
 public class KafkaEsqueSerializer implements Serializer<Object> {
 
-    private KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer();
-    private KafkaProtobufSerializer protobufSerializer = new KafkaProtobufSerializer();
+    private final KafkaAvroSerializer avroSerializer = new KafkaAvroSerializer();
+    private final KafkaProtobufSerializer<Message> protobufSerializer = new KafkaProtobufSerializer<>();
 
     private static final List<MessageType> AVRO_TYPES = Arrays.asList(MessageType.AVRO, MessageType.AVRO_TOPIC_RECORD_NAME_STRATEGY);
     private static final List<MessageType> REQUIRES_SCHEMAREGISTRY_TYPES = Arrays.asList(MessageType.AVRO, MessageType.AVRO_TOPIC_RECORD_NAME_STRATEGY, MessageType.PROTOBUF_SR);
 
-    private Map<MessageType, SerializerWrapper> serializerMap = new EnumMap<MessageType, SerializerWrapper>(MessageType.class) {{
-        Arrays.stream(MessageType.values()).filter(type -> !REQUIRES_SCHEMAREGISTRY_TYPES.contains(type)).forEach(type -> put(type, serializerByType(type)));
-    }};
+    private final Map<MessageType, SerializerWrapper<?>> serializerMap = new EnumMap<>(MessageType.class);
+
+    public KafkaEsqueSerializer() {
+        Arrays.stream(MessageType.values())
+            .filter(type -> !REQUIRES_SCHEMAREGISTRY_TYPES.contains(type))
+            .forEach(type -> serializerMap.put(type, serializerByType(type)));
+    }
 
     private String clusterId;
     private boolean isKey;
@@ -51,15 +55,15 @@ public class KafkaEsqueSerializer implements Serializer<Object> {
             }
             throw new UnsupportedOperationException("Serializer for MessageType " + MessageType.PROTOBUF_SR + " does not support serializing type: " + object.getClass());
         } else {
-            SerializerWrapper serializerWrapper = serializerMap.get(isKey ? topicConfig.getKeyType() : topicConfig.getValueType());
-            return serializerWrapper.serializer.serialize(s, serializerWrapper.function.apply(object));
+            SerializerWrapper<?> serializerWrapper = serializerMap.get(isKey ? topicConfig.getKeyType() : topicConfig.getValueType());
+            return serializerWrapper.serialize(s, (String) object);
         }
     }
 
 
     public void configure(Map<String, ?> configs, boolean isKey) {
         this.isKey = isKey;
-        serializerMap.values().forEach(serializer -> serializer.serializer.configure(configs, isKey));
+        serializerMap.values().forEach(serializer -> serializer.configure(configs, isKey));
         if (configs.get("schema.registry.url") != null) {
             avroSerializer.configure(configs, isKey);
             protobufSerializer.configure(configs, isKey);
@@ -71,7 +75,7 @@ public class KafkaEsqueSerializer implements Serializer<Object> {
     public void close() {
     }
 
-    private SerializerWrapper serializerByType(MessageType type) {
+    private SerializerWrapper<?> serializerByType(MessageType type) {
         switch (type) {
             case STRING:
                 return new SerializerWrapper<String>(s -> s, Serdes.String().serializer());
@@ -100,14 +104,21 @@ public class KafkaEsqueSerializer implements Serializer<Object> {
         }
     }
 
-    public class SerializerWrapper<T> {
-        private Function<String, T> function;
-        private Serializer<T> serializer;
+    private static class SerializerWrapper<T> {
+        private final Function<String, T> function;
+        private final Serializer<T> serializer;
 
         public SerializerWrapper(Function<String, T> function, Serializer<T> serializer) {
             this.function = function;
             this.serializer = serializer;
         }
+
+        private byte[] serialize(String topic, String value) {
+            return serializer.serialize(topic, function.apply(value));
+        }
+
+        private void configure(Map<String, ?> configs, boolean isKey) {
+            serializer.configure(configs, isKey);
+        }
     }
 }
-

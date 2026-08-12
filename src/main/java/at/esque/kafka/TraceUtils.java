@@ -2,16 +2,15 @@ package at.esque.kafka;
 
 import at.esque.kafka.topics.model.KafkaHeaderFilterOption;
 import com.google.protobuf.Message;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,17 +50,18 @@ public class TraceUtils {
         }
     }
 
-    public static Predicate<ConsumerRecord> keyPredicate(String search, @NotNull String keyMode) {
+    public static Predicate<ConsumerRecord> keyPredicate(String search, String keyMode) {
+        Objects.requireNonNull(keyMode, "keyMode");
         if (keyMode.equals("exact match")) {
             return ((cr) -> {
                 if (cr.key() instanceof Message messageKey) {
                     try {
-                        return StringUtils.equals(JsonUtils.toJson(messageKey), search);
+                        return Objects.equals(JsonUtils.toJson(messageKey), search);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 } else {
-                    return StringUtils.equals(cr.key().toString(), search);
+                    return Objects.equals(cr.key() == null ? null : cr.key().toString(), search);
                 }
             });
         } else/*(keyMode.equals("regex (contains)"))*/ {

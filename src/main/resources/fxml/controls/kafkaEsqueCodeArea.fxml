@@ -14,7 +14,7 @@
 <?import org.fxmisc.richtext.CodeArea?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<fx:root prefHeight="406.0" prefWidth="459.0" type="javafx.scene.layout.BorderPane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root prefHeight="406.0" prefWidth="459.0" type="javafx.scene.layout.BorderPane" xmlns="http://javafx.com/javafx/25.0.2" xmlns:fx="http://javafx.com/fxml/1">
             <center>
                 <VirtualizedScrollPane hPolicy="AS_NEEDED" vPolicy="AS_NEEDED" BorderPane.alignment="CENTER">
                     <content>

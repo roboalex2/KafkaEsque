@@ -943,8 +943,8 @@ public class Controller {
         return Long.parseLong(numberOfMessagesToGetField.getText());
     }
 
-    private <KT, VT> void receiveMessages(Map<Integer, AtomicLong> messagesConsumedPerPartition, Map<TopicPartition, Long> currentOffsets, KafkaConsumer topicConsumer, long numberToConsume, ObservableList<KafkaMessage> baseList) {
-        ConsumerRecords<KT, VT> records = topicConsumer.poll(Duration.ofSeconds(1));
+    private void receiveMessages(Map<Integer, AtomicLong> messagesConsumedPerPartition, Map<TopicPartition, Long> currentOffsets, KafkaConsumer<Object, Object> topicConsumer, long numberToConsume, ObservableList<KafkaMessage> baseList) {
+        ConsumerRecords<Object, Object> records = topicConsumer.poll(Duration.ofSeconds(1));
         records.forEach(record -> {
             long numberConsumed = messagesConsumedPerPartition.computeIfAbsent(record.partition(), key -> new AtomicLong(0)).get();
             currentOffsets.put(new TopicPartition(record.topic(), record.partition()), record.offset());
@@ -1022,7 +1022,7 @@ public class Controller {
         }
     }
 
-    private <KT, VT> void getMessagesContinuously(TopicMessageTypeConfig topic, Map<String, String> consumerConfig) {
+    private void getMessagesContinuously(TopicMessageTypeConfig topic, Map<String, String> consumerConfig) {
         UUID tempconsumerId = null;
         try {
             tempconsumerId = consumerHandler.registerConsumer(selectedCluster(), topic, consumerConfig);
@@ -1041,7 +1041,7 @@ public class Controller {
                 ObservableList<KafkaMessage> baseList = getAndClearBaseList(tab);
                 consumerHandler.getConsumer(consumerId).ifPresent(topicConsumer -> {
                     while (!backGroundTaskHolder.getStopBackGroundTask()) {
-                        ConsumerRecords<KT, VT> records = topicConsumer.poll(Duration.ofSeconds(1));
+                        ConsumerRecords<Object, Object> records = topicConsumer.poll(Duration.ofSeconds(1));
                         records.forEach(cr -> {
                             messagesConsumed.incrementAndGet();
                             convertAndAdd(cr, baseList);
@@ -1056,7 +1056,7 @@ public class Controller {
         });
     }
 
-    private <KT, VT> void trace(TopicMessageTypeConfig topic, Map<String, String> consumerConfig, Predicate<ConsumerRecord> predicate, Integer fasttracePartition, Long epoch, Predicate<ConsumerRecord> stopTraceInPartitionCondition) {
+    private void trace(TopicMessageTypeConfig topic, Map<String, String> consumerConfig, Predicate<ConsumerRecord> predicate, Integer fasttracePartition, Long epoch, Predicate<ConsumerRecord> stopTraceInPartitionCondition) {
         runInDaemonThread(() -> {
             UUID consumerId = null;
             try {
@@ -1089,7 +1089,7 @@ public class Controller {
                 Map<TopicPartition, Long> currentOffsets = new HashMap<>();
                 consumerHandler.getConsumer(consumerId).ifPresent(topicConsumer -> {
                     while (!backGroundTaskHolder.getStopBackGroundTask() && !reachedMaxOffsetForAllPartitions(maxOffsets, minOffsets, currentOffsets)) {
-                        ConsumerRecords<KT, VT> records = topicConsumer.poll(Duration.ofSeconds(1));
+                        ConsumerRecords<Object, Object> records = topicConsumer.poll(Duration.ofSeconds(1));
                         records.forEach(cr -> {
                             if (!topicPatitions.contains(new TopicPartition(cr.topic(), cr.partition()))) {
                                 return;

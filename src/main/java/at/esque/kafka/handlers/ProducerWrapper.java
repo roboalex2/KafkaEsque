@@ -5,20 +5,20 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 
 public class ProducerWrapper {
     private String clusterId;
-    private KafkaProducer producer;
+    private KafkaProducer<Object, Object> producer;
     private RestService schemaRegistryRestService;
 
-    public ProducerWrapper(String clusterId, KafkaProducer producer, RestService schemaRegistryRestService) {
+    public ProducerWrapper(String clusterId, KafkaProducer<Object, Object> producer, RestService schemaRegistryRestService) {
         this.producer = producer;
         this.schemaRegistryRestService = schemaRegistryRestService;
         this.clusterId = clusterId;
     }
 
-    public KafkaProducer getProducer() {
+    public KafkaProducer<Object, Object> getProducer() {
         return producer;
     }
 
-    public void setProducer(KafkaProducer producer) {
+    public void setProducer(KafkaProducer<Object, Object> producer) {
         this.producer = producer;
     }
 

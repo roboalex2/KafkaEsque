@@ -2,8 +2,8 @@ package at.esque.kafka;
 
 import at.esque.kafka.topics.model.KafkaMessageBookWrapper;
 import at.esque.kafka.topics.model.KafkaMessageForMessageBook;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 import java.io.File;
@@ -139,7 +139,7 @@ public class ControllerTest {
         assertEquals(19, replacementMap.get("${large:RANDOM_INT_OF_LENGTH_19}").length());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testAddReplacementEntries_InvalidLength_TooLarge() {
         // Given
         Map<String, String> replacementMap = new HashMap<>();
@@ -147,10 +147,10 @@ public class ControllerTest {
         Controller controller = new Controller();
 
         // When
-        controller.addReplacementEntries(replacementMap, matchingString);
+        assertThrows(RuntimeException.class, () -> controller.addReplacementEntries(replacementMap, matchingString));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testAddReplacementEntries_InvalidLength_Zero() {
         // Given
         Map<String, String> replacementMap = new HashMap<>();
@@ -158,10 +158,10 @@ public class ControllerTest {
         Controller controller = new Controller();
 
         // When
-        controller.addReplacementEntries(replacementMap, matchingString);
+        assertThrows(RuntimeException.class, () -> controller.addReplacementEntries(replacementMap, matchingString));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testAddReplacementEntries_InvalidLength_MissingNumber() {
         // Given
         Map<String, String> replacementMap = new HashMap<>();
@@ -169,10 +169,10 @@ public class ControllerTest {
         Controller controller = new Controller();
 
         // When
-        controller.addReplacementEntries(replacementMap, matchingString);
+        assertThrows(RuntimeException.class, () -> controller.addReplacementEntries(replacementMap, matchingString));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testAddReplacementEntries_UnsupportedType() {
         // Given
         Map<String, String> replacementMap = new HashMap<>();
@@ -180,7 +180,7 @@ public class ControllerTest {
         Controller controller = new Controller();
 
         // When
-        controller.addReplacementEntries(replacementMap, matchingString);
+        assertThrows(RuntimeException.class, () -> controller.addReplacementEntries(replacementMap, matchingString));
     }
 
     @Test

@@ -64,7 +64,7 @@ public class SubjectConfigDialog {
 
             ListProperty<SchemaCompatibilityLevel> schemaCompatibilityLevels = new SimpleListProperty<>(FXCollections.observableArrayList(SchemaCompatibilityLevel.values()));
 
-            SimpleObjectProperty<SchemaCompatibilityLevel> existingSubjectCompatibilityLevel = new SimpleObjectProperty(subjectCompatibilityLevel.get());
+            SimpleObjectProperty<SchemaCompatibilityLevel> existingSubjectCompatibilityLevel = new SimpleObjectProperty<>(subjectCompatibilityLevel.get());
 
             // Show dialog
             Form form = Form.of(

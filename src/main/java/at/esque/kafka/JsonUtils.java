@@ -365,7 +365,7 @@ public final class JsonUtils {
     }
 
     private static void recursivelyAddElements(JsonNode jsonNode, JsonTreeItem treeItem) {
-        jsonNode.fields().forEachRemaining(stringJsonNodeEntry -> {
+        jsonNode.properties().forEach(stringJsonNodeEntry -> {
             JsonTreeItem newItem = new JsonTreeItem(stringJsonNodeEntry.getKey(), null);
             treeItem.getChildren().add(newItem);
             applyCorrectAdder(stringJsonNodeEntry.getValue(), newItem);

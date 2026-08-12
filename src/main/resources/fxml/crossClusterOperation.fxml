@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <?import java.lang.String?>
-<SplitPane dividerPositions="0.27247191011235955, 0.7528089887640449" prefHeight="652.0" prefWidth="714.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.esque.kafka.CrossClusterController">
+<SplitPane dividerPositions="0.27247191011235955, 0.7528089887640449" prefHeight="652.0" prefWidth="714.0" xmlns="http://javafx.com/javafx/25.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.esque.kafka.CrossClusterController">
    <items>
       <FilterableListView fx:id="fromClusterTopicsList" addButtonVisible="false" refreshButtonVisible="false" />
       <SplitPane dividerPositions="0.5169230769230769" orientation="VERTICAL">

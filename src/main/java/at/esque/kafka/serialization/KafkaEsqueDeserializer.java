@@ -14,11 +14,10 @@ import java.util.Map;
 
 public class KafkaEsqueDeserializer implements Deserializer<Object> {
 
-    private Map<MessageType, Deserializer> deserializerMap = new EnumMap<MessageType, Deserializer>(MessageType.class) {{
-        Arrays.stream(MessageType.values()).forEach(type -> put(type, deserializerByType(type)));
-    }};
+    private final Map<MessageType, Deserializer<?>> deserializerMap = new EnumMap<>(MessageType.class);
 
     public KafkaEsqueDeserializer() {
+        Arrays.stream(MessageType.values()).forEach(type -> deserializerMap.put(type, deserializerByType(type)));
     }
 
     private String clusterId;
@@ -36,7 +35,7 @@ public class KafkaEsqueDeserializer implements Deserializer<Object> {
 
         Integer schemaId = null;
 
-        if (isSchemaRegistryMessageType(messageType)) {
+        if (bytes != null && isSchemaRegistryMessageType(messageType)) {
             schemaId = getSchemaId(bytes);
         }
         if ((deserializedObj instanceof GenericData.Record)) {
@@ -71,7 +70,7 @@ public class KafkaEsqueDeserializer implements Deserializer<Object> {
     public void close() {
     }
 
-    private Deserializer deserializerByType(MessageType type) {
+    private Deserializer<?> deserializerByType(MessageType type) {
         switch (type) {
             case STRING:
                 return Serdes.String().deserializer();
@@ -114,4 +113,3 @@ public class KafkaEsqueDeserializer implements Deserializer<Object> {
         return buffer.getInt();
     }
 }
-

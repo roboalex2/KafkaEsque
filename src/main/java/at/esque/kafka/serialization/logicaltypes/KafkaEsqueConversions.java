@@ -1,6 +1,6 @@
 package at.esque.kafka.serialization.logicaltypes;
 
-import io.confluent.kafka.serializers.AvroData;
+import io.confluent.kafka.schemaregistry.avro.AvroSchemaUtils;
 import org.apache.avro.Conversion;
 import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
@@ -273,13 +273,14 @@ public class KafkaEsqueConversions {
     }
 
     public static void load(){
-        AvroData.getGenericData().addLogicalTypeConversion(new UUIDConversion());
-        AvroData.getGenericData().addLogicalTypeConversion(new DateConversion());
-        AvroData.getGenericData().addLogicalTypeConversion(new TimeMillisConversion());
-        AvroData.getGenericData().addLogicalTypeConversion(new TimeMicrosConversion());
-        AvroData.getGenericData().addLogicalTypeConversion(new TimestampMillisConversion());
-        AvroData.getGenericData().addLogicalTypeConversion(new TimestampMicrosConversion());
-        AvroData.getGenericData().addLogicalTypeConversion(new LocalTimestampMillisConversion());
-        AvroData.getGenericData().addLogicalTypeConversion(new LocalTimestampMicrosConversion());
+        var genericData = AvroSchemaUtils.getGenericData();
+        genericData.addLogicalTypeConversion(new UUIDConversion());
+        genericData.addLogicalTypeConversion(new DateConversion());
+        genericData.addLogicalTypeConversion(new TimeMillisConversion());
+        genericData.addLogicalTypeConversion(new TimeMicrosConversion());
+        genericData.addLogicalTypeConversion(new TimestampMillisConversion());
+        genericData.addLogicalTypeConversion(new TimestampMicrosConversion());
+        genericData.addLogicalTypeConversion(new LocalTimestampMillisConversion());
+        genericData.addLogicalTypeConversion(new LocalTimestampMicrosConversion());
     }
 }

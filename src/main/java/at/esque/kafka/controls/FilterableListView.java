@@ -26,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -82,9 +83,9 @@ public class FilterableListView<T> extends VBox {
                     String stringifiedItem = getSelectedItemStringified(item);
                     if (usePartialMatching.get()) {
                         final String[] split = newValue.split("\\s+");
-                        return Arrays.stream(split).allMatch(s -> StringUtils.containsIgnoreCase(stringifiedItem, s));
+                        return Arrays.stream(split).allMatch(s -> Strings.CI.contains(stringifiedItem, s));
                     }
-                    return StringUtils.containsIgnoreCase(stringifiedItem, newValue);
+                    return Strings.CI.contains(stringifiedItem, newValue);
                 });
             }
         });

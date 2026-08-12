@@ -28,7 +28,7 @@
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <?import java.lang.String?>
 <SplitPane dividerPositions="0.6929460580912863" orientation="VERTICAL" prefHeight="533.0" prefWidth="961.0"
-           xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           xmlns="http://javafx.com/javafx/25.0.2" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="at.esque.kafka.Controller">
     <items>
         <BorderPane>

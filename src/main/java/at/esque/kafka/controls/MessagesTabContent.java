@@ -19,6 +19,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -54,8 +55,8 @@ public class MessagesTabContent extends VBox {
         messageSearchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             messageTableView.getFilteredMessages().setPredicate(km ->
                     (StringUtils.trimToNull(newValue) == null
-                            || (km.getKey() != null && StringUtils.containsIgnoreCase(km.getKey(), newValue)
-                            || (km.getValue() != null && StringUtils.containsIgnoreCase(km.getValue(), newValue)))
+                            || (km.getKey() != null && Strings.CI.contains(km.getKey(), newValue)
+                            || (km.getValue() != null && Strings.CI.contains(km.getValue(), newValue)))
                     ));
         });
         messageTableView.setOnKeyPressed(generateMessageTableCopyEventHandler());

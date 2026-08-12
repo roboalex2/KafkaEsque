@@ -1,16 +1,17 @@
 package at.esque.kafka;
 
 import at.esque.kafka.serialization.logicaltypes.KafkaEsqueConversions;
-import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.classic.ClassicConstants;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Launcher {
 
     static {
-        File logbackFile = new File(String.format(System.getProperty("user.home") + "/.kafkaesque/%s", "/logback.xml"));
-        if (logbackFile.exists()) {
-            System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, logbackFile.getAbsolutePath());
+        Path logbackFile = Path.of(System.getProperty("user.home"), ".kafkaesque", "logback.xml");
+        if (Files.isRegularFile(logbackFile)) {
+            System.setProperty(ClassicConstants.CONFIG_FILE_PROPERTY, logbackFile.toAbsolutePath().toString());
         }
         KafkaEsqueConversions.load();
     }

@@ -25,7 +25,6 @@ import org.apache.avro.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.sourcelab.kafka.connect.apiclient.request.dto.ConnectorPluginConfigValidationResults;
 
-import javax.swing.text.TabableView;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,7 +35,7 @@ public class CreateConnectorController {
 
 
     @FXML
-    private ComboBox connectorClassCombo;
+    private ComboBox<String> connectorClassCombo;
 
     @FXML
     private KafkaEsqueCodeArea connectorConfigTextArea;
@@ -51,7 +50,7 @@ public class CreateConnectorController {
     private Stage stage;
 
     @FXML
-    private TableView paramHelpView;
+    private TableView<ConnectConfigParameter> paramHelpView;
 
     @FXML
     TableColumn<ConnectConfigParameter, String> paramName;
@@ -134,7 +133,7 @@ public class CreateConnectorController {
         try {
             Map<String, String> paramMap = ConnectUtil.parseConfigMapFromJsonString(connectorConfigTextArea.getText());
 
-            String connectorClass = (String) connectorClassCombo.getValue();
+            String connectorClass = connectorClassCombo.getValue();
             String connectorName = connectorNameField.getText();
 
             if(newConnectorMode == true) {
@@ -163,7 +162,7 @@ public class CreateConnectorController {
         connectorClassCombo.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !newValue.equals(oldValue)) {
 
-                fetchAndShowPossibleConnectorConfigParams((String) newValue);
+                fetchAndShowPossibleConnectorConfigParams(newValue);
                 showInitialConnectorConfig();
             }
         });
@@ -193,7 +192,7 @@ public class CreateConnectorController {
         try {
             Map<String, String> paramMap = ConnectUtil.parseConfigMapFromJsonString(connectorConfigTextArea.getText());
 
-            String connectorClass = (String) connectorClassCombo.getValue();
+            String connectorClass = connectorClassCombo.getValue();
             String connectorName = connectorNameField.getText();
 
             ValidationResult validationResult = kafkaesqueConnectClient.validateConnectorConfig(connectorName, connectorClass, paramMap);

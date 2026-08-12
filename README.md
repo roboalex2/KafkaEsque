@@ -2,12 +2,12 @@
 
 ## What's new
 
-Starting with version 2.0.0 KafkaEsque uses JavaFX 17 instead of JavaFX 8, and provides prepackaged builds for most
+KafkaEsque uses Java 25 and JavaFX 25, and provides prepackaged builds for most
 operating systems (Windows, macOS, Linux) that were created with
-[jpackage](https://docs.oracle.com/en/java/javase/17/jpackage/packaging-overview.html) using [GitHub Actions](actions)
+[jpackage](https://docs.oracle.com/en/java/javase/25/jpackage/packaging-overview.html) using [GitHub Actions](actions)
 (CI). Every release on GitHub can be tracked to its 'run' (one job for each OS) in the 'Gradle Build' workflow, and the
 source code that was used to build it. Furthermore,
-[jlink](https://docs.oracle.com/en/java/javase/17/docs/specs/man/jlink.html) bundles a minimal version of the JRE/JDK
+[jlink](https://docs.oracle.com/en/java/javase/25/docs/specs/man/jlink.html) bundles a minimal version of the JRE/JDK
 with the required JavaFX libraries. Therefore, it is not necessary to have Java installed at all.
 
 Thanks to the [badass-runtime plugin](https://badass-runtime-plugin.beryx.org/releases/latest/) for Gradle, the
@@ -36,7 +36,7 @@ uses Kafkaesque on another Linux distribution, feel free to submit an issue, or 
 packages for your distribution.
 
 ### JAR
-You can still run just the JAR files as before version 2.0.0, but now they require Java 17 instead of Java 8.
+You can still run the JAR files directly, but they require Java 25.
 
 :information_source: This is a JavaFX application and therefore requires OpenJFX.
 * When using a JDK that includes OpenJFX simply run it with `java -jar KafkaEsque.jar`

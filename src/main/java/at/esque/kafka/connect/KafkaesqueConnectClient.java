@@ -2,7 +2,6 @@ package at.esque.kafka.connect;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.config.SslConfigs;
-import org.eclipse.jetty.util.StringUtil;
 import org.sourcelab.kafka.connect.apiclient.Configuration;
 import org.sourcelab.kafka.connect.apiclient.KafkaConnectClient;
 import org.sourcelab.kafka.connect.apiclient.request.dto.*;
@@ -19,14 +18,10 @@ public class KafkaesqueConnectClient {
 
         Configuration configuration = new Configuration(kafkaConnectURL);
 
-        if(!StringUtil.isEmpty(kafkaConnectBasicAuthUser) && !StringUtils.isEmpty(kafkaConnectBasicAuthPassword)) {
+        if (StringUtils.isNotEmpty(kafkaConnectBasicAuthUser) && StringUtils.isNotEmpty(kafkaConnectBasicAuthPassword)) {
             configuration.useBasicAuth(kafkaConnectBasicAuthUser, kafkaConnectBasicAuthPassword);
         }
         if(kafkaConnectuseSsl) {
-            if (sslProps.get(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG) != null) {
-                configuration.useTrustStore(new File(sslProps.get(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG)), sslProps.get(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG));
-            }
-
             if (sslProps.get(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG) != null) {
                 configuration.useTrustStore(new File(sslProps.get(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG)), sslProps.get(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG));
             }
@@ -40,7 +35,7 @@ public class KafkaesqueConnectClient {
 
     public List<String> getConnectors()
     {
-        return connectClient.getConnectors().stream().collect(Collectors.toList());
+        return connectClient.getConnectors().stream().toList();
     }
 
     public Map<String, String> getConnectorConfig(String connectorName)

@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0"
-            xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/25.0.2" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="at.esque.kafka.lag.viewer.LagViewerController">
     <center>
         <SplitPane dividerPositions="0.3" prefHeight="160.0" prefWidth="200.0"

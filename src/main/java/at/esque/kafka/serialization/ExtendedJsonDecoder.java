@@ -123,7 +123,7 @@ public class ExtendedJsonDecoder extends ParsingDecoder
             throw new NullPointerException("InputStream to read from cannot be null!");
         }
         parser.reset();
-        this.in = jsonFactory.createJsonParser(in);
+        this.in = jsonFactory.createParser(in);
         this.in.nextToken();
         return this;
     }
@@ -145,7 +145,7 @@ public class ExtendedJsonDecoder extends ParsingDecoder
             throw new NullPointerException("String to read from cannot be null!");
         }
         parser.reset();
-        this.in = new JsonFactory().createJsonParser(in);
+        this.in = new JsonFactory().createParser(in);
         this.in.nextToken();
         return this;
     }
@@ -582,6 +582,7 @@ public class ExtendedJsonDecoder extends ParsingDecoder
         return result;
     }
 
+    @SuppressWarnings("deprecation") // Jackson retains these abstract compatibility methods on JsonParser.
     private JsonParser makeParser(final List<JsonElement> elements) throws IOException {
         return new JsonParser() {
             int pos = 0;
@@ -864,4 +865,3 @@ public class ExtendedJsonDecoder extends ParsingDecoder
         return foundField;
     }
 }
-

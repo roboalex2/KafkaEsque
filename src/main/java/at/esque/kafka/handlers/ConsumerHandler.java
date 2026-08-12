@@ -35,20 +35,20 @@ public class ConsumerHandler {
     @Inject
     private ConfigHandler configHandler;
 
-    private Map<UUID, KafkaConsumer> registeredConsumers = new ConcurrentHashMap<>();
+    private Map<UUID, KafkaConsumer<Object, Object>> registeredConsumers = new ConcurrentHashMap<>();
 
     public ConsumerHandler() {
     }
 
-    public Optional<KafkaConsumer> getConsumer(UUID consumerId) {
+    public Optional<KafkaConsumer<Object, Object>> getConsumer(UUID consumerId) {
         return Optional.ofNullable(registeredConsumers.get(consumerId));
     }
 
-    public Map<UUID, KafkaConsumer> getRegisteredConsumers() {
+    public Map<UUID, KafkaConsumer<Object, Object>> getRegisteredConsumers() {
         return registeredConsumers;
     }
 
-    public void setRegisteredConsumers(Map<UUID, KafkaConsumer> registeredConsumers) {
+    public void setRegisteredConsumers(Map<UUID, KafkaConsumer<Object, Object>> registeredConsumers) {
         this.registeredConsumers = registeredConsumers;
     }
 
@@ -83,13 +83,16 @@ public class ConsumerHandler {
         consumerProps.putAll(configHandler.getSchemaRegistryAuthProperties(config));
         consumerProps.putAll(consumerConfigs);
 
-        LOGGER.info("Creating new Consumer with properties: [{}]", consumerProps);
+        LOGGER.info("Creating consumer [{}] for cluster [{}]", consumerId, config.getIdentifier());
         registeredConsumers.put(consumerId, new KafkaConsumer<>(consumerProps));
         return consumerId;
     }
 
     public void deregisterConsumer(UUID consumerId) {
-        KafkaConsumer deregisteredConsumer = registeredConsumers.get(consumerId);
+        KafkaConsumer<Object, Object> deregisteredConsumer = registeredConsumers.get(consumerId);
+        if (deregisteredConsumer == null) {
+            return;
+        }
         deregisteredConsumer.close();
         registeredConsumers.remove(consumerId);
         LOGGER.info("Deregistered consumer with id [{}]", consumerId);
@@ -99,27 +102,27 @@ public class ConsumerHandler {
         subscribe(registeredConsumers.get(consumerId), topic);
     }
 
-    public void subscribe(KafkaConsumer<String, String> consumer, String topic) {
+    public void subscribe(KafkaConsumer<Object, Object> consumer, String topic) {
         consumer.subscribe(Collections.singletonList(topic));
-        consumer.poll(0);
+        consumer.poll(Duration.ZERO);
     }
 
     public Map<TopicPartition, Long> getMaxOffsets(UUID consumerId) {
-        KafkaConsumer<String, String> currentConsumer = registeredConsumers.get(consumerId);
+        KafkaConsumer<Object, Object> currentConsumer = registeredConsumers.get(consumerId);
         return getMaxOffsets(currentConsumer);
     }
 
-    public Map<TopicPartition, Long> getMaxOffsets(KafkaConsumer<String, String> currentConsumer) {
+    public Map<TopicPartition, Long> getMaxOffsets(KafkaConsumer<Object, Object> currentConsumer) {
         return currentConsumer.endOffsets(currentConsumer.assignment());
     }
 
     public Map<TopicPartition, Long> getCurrentOffsets(UUID consumerId) {
-        KafkaConsumer<String, String> currentConsumer = registeredConsumers.get(consumerId);
+        KafkaConsumer<Object, Object> currentConsumer = registeredConsumers.get(consumerId);
         return getCurrentOffsets(currentConsumer);
     }
 
-    public Map<TopicPartition, Long> getCurrentOffsets(KafkaConsumer<String, String> currentConsumer) {
-        Map<TopicPartition, Long> currentOffsets = new HashMap();
+    public Map<TopicPartition, Long> getCurrentOffsets(KafkaConsumer<Object, Object> currentConsumer) {
+        Map<TopicPartition, Long> currentOffsets = new HashMap<>();
         currentConsumer.assignment().forEach(topicPartition -> {
             currentOffsets.put(topicPartition, currentConsumer.position(topicPartition) - 1);
         });
@@ -127,11 +130,11 @@ public class ConsumerHandler {
     }
 
     public Map<TopicPartition, Long> getMinOffsets(UUID consumerId) {
-        KafkaConsumer<String, String> currentConsumer = registeredConsumers.get(consumerId);
+        KafkaConsumer<Object, Object> currentConsumer = registeredConsumers.get(consumerId);
         return getMinOffsets(currentConsumer);
     }
 
-    public Map<TopicPartition, Long> getMinOffsets(KafkaConsumer<String, String> currentConsumer) {
+    public Map<TopicPartition, Long> getMinOffsets(KafkaConsumer<Object, Object> currentConsumer) {
         return currentConsumer.beginningOffsets(currentConsumer.assignment());
     }
 
@@ -139,7 +142,7 @@ public class ConsumerHandler {
         seekToOffset(registeredConsumers.get(consumerId), offset);
     }
 
-    public void seekToOffset(KafkaConsumer<String, String> consumer, long offset) {
+    public void seekToOffset(KafkaConsumer<Object, Object> consumer, long offset) {
         if (offset == -1) {
             consumer.seekToBeginning(consumer.assignment());
         } else if (offset == -2) {
@@ -158,7 +161,7 @@ public class ConsumerHandler {
         seekToTime(registeredConsumers.get(consumerId), timestamp);
     }
 
-    public void seekToTime(KafkaConsumer<String, String> consumer, Long timestamp) {
+    public void seekToTime(KafkaConsumer<Object, Object> consumer, Long timestamp) {
         Map<TopicPartition, Long> map = consumer.assignment().stream()
                 .collect(Collectors.toMap((topicPartition -> topicPartition), topicPartition -> timestamp));
         Map<TopicPartition, OffsetAndTimestamp> offsetAndTimestampMap = consumer.offsetsForTimes(map);

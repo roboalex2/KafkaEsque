@@ -154,7 +154,7 @@ public class CrossClusterController {
         refreshOperationList(null);
     }
 
-    private KafkaesqueAdminClient setupClusterControls(ClusterConfig clusterConfig, KafkaesqueAdminClient adminClient, FilterableListView topicList) {
+    private KafkaesqueAdminClient setupClusterControls(ClusterConfig clusterConfig, KafkaesqueAdminClient adminClient, FilterableListView<String> topicList) {
         if (adminClient != null) {
             adminClient.close();
         }
@@ -188,17 +188,17 @@ public class CrossClusterController {
                 ErrorAlert.show(e, getWindow());
                 return;
             }
-            Optional<KafkaConsumer> consumer = consumerHandler.getConsumer(consumerId);
+            Optional<KafkaConsumer<Object, Object>> consumer = consumerHandler.getConsumer(consumerId);
             Platform.runLater(() -> operation.statusProperty().set("Running"));
             consumer.ifPresent(kafkaConsumer -> {
                 AtomicLong count = new AtomicLong(0L);
                 Long limit = StringUtils.isEmpty(amountLimit.getText()) ? null : Long.parseLong(amountLimit.getText());
                 while (!operation.getStop().get() && (limit == null || count.get() < limit) && !operation.getStatus().equals("Error")) {
-                    ConsumerRecords consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(5));
-                    Iterable<ConsumerRecord> records = consumerRecords.records(operation.getFromTopic().getName());
-                    Iterator<ConsumerRecord> iterator = records.iterator();
+                    ConsumerRecords<Object, Object> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(5));
+                    Iterable<ConsumerRecord<Object, Object>> records = consumerRecords.records(operation.getFromTopic().getName());
+                    Iterator<ConsumerRecord<Object, Object>> iterator = records.iterator();
                     while ((limit == null || count.get() < limit) && iterator.hasNext()) {
-                        ConsumerRecord consumerRecord = iterator.next();
+                        ConsumerRecord<Object, Object> consumerRecord = iterator.next();
                         try {
                             if (operation.getFilterFunction().test(consumerRecord)) {
                                 if (reserializeMessagesToggle.isSelected()) {
@@ -214,11 +214,11 @@ public class CrossClusterController {
                                         preserveTimestampsToggle.isSelected() ? Instant.parse(convert.getTimestamp()).toEpochMilli() : null
                                     );
                                 } else {
-                                    ProducerRecord producerRecord;
+                                    ProducerRecord<Object, Object> producerRecord;
                                     if (preserveTimestampsToggle.isSelected()) {
-                                        producerRecord = new ProducerRecord(operation.getToTopic().getName(), null, consumerRecord.timestamp(), consumerRecord.key(), consumerRecord.value());
+                                        producerRecord = new ProducerRecord<>(operation.getToTopic().getName(), null, consumerRecord.timestamp(), consumerRecord.key(), consumerRecord.value());
                                     } else {
-                                        producerRecord = new ProducerRecord(operation.getToTopic().getName(), consumerRecord.key(), consumerRecord.value());
+                                        producerRecord = new ProducerRecord<>(operation.getToTopic().getName(), consumerRecord.key(), consumerRecord.value());
                                     }
                                     consumerRecord.headers().forEach(header -> producerRecord.headers().add(header));
                                     producerHandler.sendRecord(producerId, producerRecord);

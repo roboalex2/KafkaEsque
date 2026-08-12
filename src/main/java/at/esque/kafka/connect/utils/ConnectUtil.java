@@ -2,6 +2,7 @@ package at.esque.kafka.connect.utils;
 
 import at.esque.kafka.alerts.ErrorAlert;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ConnectUtil {
+    private static final TypeReference<Map<String, String>> STRING_MAP_TYPE = new TypeReference<>() {};
 
     public final static List<String> PARAM_BLACK_LIST_EDIT =Arrays.asList("name","connector.class");
     public final static List<String> PARAM_BLACK_LIST_VIEW =Arrays.asList("name");
@@ -44,7 +46,7 @@ public class ConnectUtil {
         try{
             Map<String, String> paramMap;
 
-            paramMap = objectMapper.readValue(jsonString,Map.class);
+            paramMap = objectMapper.readValue(jsonString, STRING_MAP_TYPE);
 
             //Remove not allowed params if they got added manually
             for(String param : PARAM_BLACK_LIST_EDIT)

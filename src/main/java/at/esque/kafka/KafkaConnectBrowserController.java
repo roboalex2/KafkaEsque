@@ -67,7 +67,7 @@ public class KafkaConnectBrowserController {
     private Button resumeButton;
 
     @FXML
-    private TableView taskTableView;
+    private TableView<Status.TaskStatus> taskTableView;
 
     @FXML
     private TableColumn<Status.TaskStatus, String> taskIdColumn;
@@ -114,10 +114,9 @@ public class KafkaConnectBrowserController {
                             @Override
                             public void handle(ActionEvent event) {
                                 try {
-                                    Object item = taskTableView.getSelectionModel().getSelectedItem();
+                                    Status.TaskStatus taskStatus = taskTableView.getSelectionModel().getSelectedItem();
 
-                                    if (item instanceof Status.TaskStatus) {
-                                        Status.TaskStatus taskStatus = (Status.TaskStatus) item;
+                                    if (taskStatus != null) {
 
                                         kafkaesqueConnectClient.restartConnectorTask(selectedConnectorInRightPane, taskStatus.getId());
                                     }

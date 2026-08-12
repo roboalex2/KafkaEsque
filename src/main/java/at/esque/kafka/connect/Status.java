@@ -14,7 +14,7 @@ public class Status {
     private String type;
     private String status;
     private String workerId;
-    private List<TaskStatus> taskStatusList= new ArrayList();
+    private final List<TaskStatus> taskStatusList = new ArrayList<>();
 
     public Status(String type, String status, String workerId)
     {

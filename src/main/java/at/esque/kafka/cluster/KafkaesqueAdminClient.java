@@ -4,12 +4,11 @@ import at.esque.kafka.alerts.ErrorAlert;
 import at.esque.kafka.lag.viewer.Lag;
 import at.esque.kafka.lag.viewer.LagViewerController;
 import at.esque.kafka.topics.DescribeTopicWrapper;
-import com.google.common.base.Functions;
 import javafx.application.Platform;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.Config;
-import org.apache.kafka.clients.admin.ConsumerGroupListing;
+import org.apache.kafka.clients.admin.GroupListing;
 import org.apache.kafka.clients.admin.CreateAclsResult;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.DeleteTopicsResult;
@@ -18,7 +17,8 @@ import org.apache.kafka.clients.admin.DescribeConfigsResult;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult;
 import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsSpec;
-import org.apache.kafka.clients.admin.ListConsumerGroupsResult;
+import org.apache.kafka.clients.admin.ListGroupsResult;
+import org.apache.kafka.clients.admin.ListGroupsOptions;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.ListTopicsOptions;
 import org.apache.kafka.clients.admin.ListTopicsResult;
@@ -139,10 +139,10 @@ public class KafkaesqueAdminClient {
     }
 
     public List<Lag> getConsumerGroupLags(Set<String> consumedTopicFilterParameters) {
-        ListConsumerGroupsResult result = adminClient.listConsumerGroups();
+        ListGroupsResult result = adminClient.listGroups(ListGroupsOptions.forConsumerGroups());
         try {
-            Collection<ConsumerGroupListing> consumerGroupListings = result.all().get();
-            ListConsumerGroupOffsetsResult listConsumerGroupOffsetsResult = adminClient.listConsumerGroupOffsets(buildConsumerGroupsOffsetSpecMap(consumerGroupListings));
+            Collection<GroupListing> groupListings = result.all().get();
+            ListConsumerGroupOffsetsResult listConsumerGroupOffsetsResult = adminClient.listConsumerGroupOffsets(buildConsumerGroupsOffsetSpecMap(groupListings));
             Map<String, Map<TopicPartition, OffsetAndMetadata>> consumerGroupTopicPartitionOffsetMap = listConsumerGroupOffsetsResult.all().get();
             Map<String, Map<TopicPartition, OffsetAndMetadata>> filteredConsumerGroups = consumerGroupTopicPartitionOffsetMap.entrySet().stream().filter(stringMapEntry -> {
                 if (consumedTopicFilterParameters == null) {
@@ -177,8 +177,8 @@ public class KafkaesqueAdminClient {
                 .collect(Collectors.toMap(Function.identity(), topicPartition -> OffsetSpec.latest()));
     }
 
-    private Map<String, ListConsumerGroupOffsetsSpec> buildConsumerGroupsOffsetSpecMap(Collection<ConsumerGroupListing> consumerGroupListings) {
-        return consumerGroupListings.stream().map(ConsumerGroupListing::groupId).collect(Collectors.toMap(Functions.identity(), s -> new ListConsumerGroupOffsetsSpec()));
+    private Map<String, ListConsumerGroupOffsetsSpec> buildConsumerGroupsOffsetSpecMap(Collection<GroupListing> groupListings) {
+        return groupListings.stream().map(GroupListing::groupId).collect(Collectors.toMap(Function.identity(), ignored -> new ListConsumerGroupOffsetsSpec()));
     }
 
     private long calculateCurrentOffsetSum(Map.Entry<String, Map<TopicPartition, OffsetAndMetadata>> consumerGroupListing) {

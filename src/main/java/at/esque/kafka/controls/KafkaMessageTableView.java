@@ -30,8 +30,8 @@ public class KafkaMessageTableView extends TableView<KafkaMessage> {
         sortedMessages.comparatorProperty().bind(this.comparatorProperty());
         buildTableColumns();
         this.setItems(sortedMessages);
-        this.minHeight(0);
-        this.minWidth(0);
+        setMinHeight(0);
+        setMinWidth(0);
     }
 
     private void buildTableColumns() {
@@ -69,7 +69,11 @@ public class KafkaMessageTableView extends TableView<KafkaMessage> {
             }
         });
         messageValueColumn.setCellFactory(param -> getNullMarkingTableCell("NULL/Tombstone", Color.GRAY));
-        this.getColumns().addAll(messageTimestampColumn, messagePartitionColumn, messageOffsetColumn, messageKeyColumn, messageValueColumn);
+        getColumns().add(messageTimestampColumn);
+        getColumns().add(messagePartitionColumn);
+        getColumns().add(messageOffsetColumn);
+        getColumns().add(messageKeyColumn);
+        getColumns().add(messageValueColumn);
     }
 
     @NotNull

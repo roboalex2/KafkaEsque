@@ -107,8 +107,8 @@ public class ProducerHandler {
         props.putAll(configHandler.getSaslProperties(clusterConfig));
         props.putAll(configHandler.readProducerConfigs(clusterConfig.getIdentifier()));
 
-        LOGGER.info("Creating new Producer with properties: [{}]", props);
-        registeredProducers.put(producerId, new ProducerWrapper(clusterConfig.getIdentifier(), new KafkaProducer(props), schemaRegistryRestService));
+        LOGGER.info("Creating producer [{}] for cluster [{}]", producerId, clusterConfig.getIdentifier());
+        registeredProducers.put(producerId, new ProducerWrapper(clusterConfig.getIdentifier(), new KafkaProducer<>(props), schemaRegistryRestService));
         return producerId;
     }
 
@@ -137,13 +137,13 @@ public class ProducerHandler {
             throw new RuntimeException(String.format("Producer with id [%s] does not exist!", producerId));
         }
         TopicMessageTypeConfig typeConfig = configHandler.getConfigForTopic(producerWrapper.getClusterId(), topic);
-        ProducerRecord record;
+        ProducerRecord<Object, Object> record;
         Object keyValue = getMessageValue(topic, key, producerWrapper, typeConfig.getKeyType(), true, keyRecordType);
         Object valueValue = getMessageValue(topic, value, producerWrapper, typeConfig.getValueType(), false, valueRecordType);
         if (selectedpartition != null && selectedpartition > -1) {
-            record = new ProducerRecord(topic, selectedpartition, timestamp, keyValue, valueValue);
+            record = new ProducerRecord<>(topic, selectedpartition, timestamp, keyValue, valueValue);
         } else {
-            record = new ProducerRecord(topic, null, timestamp, keyValue, valueValue);
+            record = new ProducerRecord<>(topic, null, timestamp, keyValue, valueValue);
         }
         if (headers != null) {
             headers.forEach(header -> record.headers().add(header));
@@ -163,11 +163,11 @@ public class ProducerHandler {
         return key;
     }
 
-    public RecordMetadata sendRecord(UUID producerId, ProducerRecord producerRecord) throws InterruptedException, ExecutionException, TimeoutException {
+    public RecordMetadata sendRecord(UUID producerId, ProducerRecord<Object, Object> producerRecord) throws InterruptedException, ExecutionException, TimeoutException {
         return publishRecord(registeredProducers.get(producerId), producerRecord);
     }
 
-    private RecordMetadata publishRecord(ProducerWrapper producerWrapper, ProducerRecord record) throws InterruptedException, ExecutionException, TimeoutException {
+    private RecordMetadata publishRecord(ProducerWrapper producerWrapper, ProducerRecord<Object, Object> record) throws InterruptedException, ExecutionException, TimeoutException {
         Future<RecordMetadata> future = producerWrapper.getProducer().send(record);
         RecordMetadata metadata = future.get(1, TimeUnit.MINUTES);
         LOGGER.debug(String.format("topic [%s] / partition [%s] / offset [%s]", metadata.topic(), metadata.partition(), metadata.offset()));

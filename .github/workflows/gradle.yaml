@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         os: [ macos-14, ubuntu-22.04, windows-2022 ]
-        java: [ '17' ]
+        java: [ '25' ]
       fail-fast: false
     name: ${{ matrix.os }}
     steps:
@@ -19,12 +19,12 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
-          java-package: jdk+fx
+          java-package: jdk
           cache: 'gradle'
       - name: Echo JAVA_HOME
         run: echo $JAVA_HOME
       - name: Verify Gradle Wrapper
-        uses: gradle/actions/wrapper-validation@v3
+        uses: gradle/actions/wrapper-validation@v4
       - name: Execute build (macOS & Ubuntu)
         if: matrix.os != 'windows-2022'
         run: ./gradlew --info build
