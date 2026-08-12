@@ -150,6 +150,7 @@ public class Controller {
     public static final String ICONS_KAFKAESQUE_PNG_PATH = "/icons/kafkaesque.png";
 
     private KafkaesqueAdminClient adminClient;
+    private final AtomicLong adminClientGeneration = new AtomicLong();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
@@ -298,13 +299,19 @@ public class Controller {
         });
 
         clusterComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            long generation = adminClientGeneration.incrementAndGet();
             try {
                 closeAdminClientIfPresentAndClearTopicList();
                 if (newValue == null) {
                     return;
                 }
-                adminClient = new KafkaesqueAdminClient(newValue.getBootStrapServers(), configHandler.getSslProperties(selectedCluster()), configHandler.getSaslProperties(selectedCluster()));
-                refreshTopicList();
+                KafkaesqueAdminClient newAdminClient = new KafkaesqueAdminClient(
+                        newValue.getBootStrapServers(),
+                        configHandler.getSslProperties(newValue),
+                        configHandler.getSaslProperties(newValue)
+                );
+                adminClient = newAdminClient;
+                refreshTopicList(newAdminClient, generation);
             } catch (Exception e) {
                 ErrorAlert.show(e, controlledStage);
                 clusterComboBox.getSelectionModel().clearSelection();
@@ -371,10 +378,11 @@ public class Controller {
     }
 
     private void closeAdminClientIfPresentAndClearTopicList() {
-        if (adminClient != null) {
-            adminClient.close();
-            adminClient = null;
-            topicListView.getBaseList().clear();
+        KafkaesqueAdminClient previousAdminClient = adminClient;
+        adminClient = null;
+        topicListView.getBaseList().clear();
+        if (previousAdminClient != null) {
+            previousAdminClient.closeAsync();
         }
     }
 
@@ -632,25 +640,49 @@ public class Controller {
     }
 
     private void refreshTopicList() {
-        backGroundTaskHolder.setBackGroundTaskDescription("getting Topics...");
-        runInDaemonThread(() -> getTopicsForCluster());
+        KafkaesqueAdminClient currentAdminClient = adminClient;
+        if (currentAdminClient == null) {
+            return;
+        }
+        refreshTopicList(currentAdminClient, adminClientGeneration.get());
     }
 
-    private void getTopicsForCluster() {
+    private void refreshTopicList(KafkaesqueAdminClient client, long generation) {
+        backGroundTaskHolder.setBackGroundTaskDescription("getting Topics...");
+        runInDaemonThread(() -> getTopicsForCluster(client, generation));
+    }
+
+    private void getTopicsForCluster(KafkaesqueAdminClient client, long generation) {
         StopWatch stopWatch = new StopWatch();
         try {
             stopWatch.start();
             LOGGER.info("Started getting topics for cluster");
             Platform.runLater(() -> backGroundTaskHolder.setIsInProgress(true));
-            Set<String> topics = adminClient.getTopics();
-            Platform.runLater(() -> topicListView.setItems(topics));
+            Set<String> topics = client.getTopics();
+            Platform.runLater(() -> {
+                if (isCurrentAdminClient(client, generation)) {
+                    topicListView.setItems(topics);
+                }
+            });
         } catch (Exception e) {
-            Platform.runLater(() -> ErrorAlert.show(e));
+            Platform.runLater(() -> {
+                if (isCurrentAdminClient(client, generation)) {
+                    ErrorAlert.show(e, controlledStage);
+                }
+            });
         } finally {
             stopWatch.stop();
             LOGGER.info("Finished getting topics for cluster [{}]", stopWatch);
-            Platform.runLater(() -> backGroundTaskHolder.backgroundTaskStopped());
+            Platform.runLater(() -> {
+                if (isCurrentAdminClient(client, generation)) {
+                    backGroundTaskHolder.backgroundTaskStopped();
+                }
+            });
         }
+    }
+
+    private boolean isCurrentAdminClient(KafkaesqueAdminClient client, long generation) {
+        return adminClient == client && adminClientGeneration.get() == generation;
     }
 
     @FXML
@@ -1408,10 +1440,10 @@ public class Controller {
         backGroundTaskHolder.setProgressMessage(null);
         Thread daemonThread = new Thread(runnable);
         daemonThread.setDaemon(true);
-        daemonThread.start();
         daemonThread.setUncaughtExceptionHandler((t, e) -> {
             Platform.runLater(() -> ErrorAlert.show(e, controlledStage));
         });
+        daemonThread.start();
     }
 
     // Experimental Area

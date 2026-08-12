@@ -26,6 +26,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 import org.apache.kafka.common.acl.AccessControlEntryFilter;
@@ -40,10 +41,10 @@ import org.apache.kafka.common.resource.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -78,9 +79,8 @@ public class KafkaesqueAdminClient {
         try {
             return result.names().get(15, TimeUnit.SECONDS);
         } catch (Exception e) {
-            Platform.runLater(() -> ErrorAlert.show(e));
+            throw new KafkaException("Failed to load topics from the broker", e);
         }
-        return new HashSet<>();
     }
 
     public List<Integer> getPatitions(String topic) {
@@ -284,6 +284,17 @@ public class KafkaesqueAdminClient {
     }
 
     public void close() {
-        adminClient.close();
+        adminClient.close(Duration.ofSeconds(1));
+    }
+
+    /**
+     * Closes the Kafka client without ever blocking the JavaFX application thread.
+     * This is especially important for clients connected to an unreachable broker,
+     * because Kafka may still have pending metadata requests when a cluster is changed.
+     */
+    public void closeAsync() {
+        Thread closeThread = new Thread(this::close, "kafkaesque-admin-client-close");
+        closeThread.setDaemon(true);
+        closeThread.start();
     }
 }

@@ -156,7 +156,7 @@ public class CrossClusterController {
 
     private KafkaesqueAdminClient setupClusterControls(ClusterConfig clusterConfig, KafkaesqueAdminClient adminClient, FilterableListView topicList) {
         if (adminClient != null) {
-            adminClient.close();
+            adminClient.closeAsync();
         }
         adminClient = new KafkaesqueAdminClient(clusterConfig.getBootStrapServers(), configHandler.getSslProperties(clusterConfig), configHandler.getSaslProperties(clusterConfig));
         KafkaesqueAdminClient finalAdminClient = adminClient;
@@ -248,6 +248,8 @@ public class CrossClusterController {
     private void runInDaemonThread(Runnable runnable) {
         Thread daemonThread = new Thread(runnable);
         daemonThread.setDaemon(true);
+        daemonThread.setUncaughtExceptionHandler((thread, exception) ->
+                Platform.runLater(() -> ErrorAlert.show(exception, getWindow())));
         daemonThread.start();
     }
 
